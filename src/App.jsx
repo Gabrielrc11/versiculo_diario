@@ -1,6 +1,74 @@
 import { useState, useEffect } from 'react';
-import { Container, Paper, Typography, Box, CircularProgress, TextField, Button, Link } from '@mui/material';
+import { 
+  Container, 
+  Paper, 
+  Typography, 
+  Box, 
+  CircularProgress, 
+  TextField, 
+  Button, 
+  Link,
+  IconButton,
+  Fade,
+  Tooltip,
+  Divider,
+  Alert,
+  Snackbar
+} from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import LogoutIcon from '@mui/icons-material/Logout';
+import BookIcon from '@mui/icons-material/Book';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import axios from 'axios';
+
+// Configuração base do axios
+axios.defaults.baseURL = 'https://www.abibliadigital.com.br/api';
+axios.defaults.headers.common['Accept'] = 'application/json';
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+
+// Criando um tema personalizado
+const getTheme = (mode) => createTheme({
+  palette: {
+    mode,
+    primary: {
+      main: mode === 'light' ? '#1e88e5' : '#90caf9',
+    },
+    background: {
+      default: mode === 'light' ? '#f5f5f5' : '#121212',
+      paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+    h6: {
+      fontWeight: 500,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+          fontSize: '1rem',
+          padding: '8px 24px',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+        },
+      },
+    },
+  },
+});
 
 function App() {
   const [versiculo, setVersiculo] = useState(null);
@@ -11,6 +79,11 @@ function App() {
   const [nome, setNome] = useState('');
   const [erro, setErro] = useState('');
   const [modoRegistro, setModoRegistro] = useState(false);
+  const [modoEscuro, setModoEscuro] = useState(localStorage.getItem('modoEscuro') === 'true');
+  const [animarVersiculo, setAnimarVersiculo] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+
+  const theme = getTheme(modoEscuro ? 'dark' : 'light');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,19 +91,28 @@ function App() {
     setErro('');
 
     try {
-      const response = await axios.put('https://www.abibliadigital.com.br/api/users/token', {
+      // Primeiro, tenta autenticar
+      const response = await axios.post('/users/auth', {
         email,
         password: senha
       });
 
-      const novoToken = response.data.token;
-      setToken(novoToken);
-      localStorage.setItem('bibliaToken', novoToken);
-      buscarVersiculo(novoToken);
+      if (response.data.token) {
+        const novoToken = response.data.token;
+        setToken(novoToken);
+        localStorage.setItem('bibliaToken', novoToken);
+        setSnackbar({ open: true, message: 'Login realizado com sucesso!', severity: 'success' });
+        buscarVersiculo(novoToken);
+      } else {
+        throw new Error('Token não recebido');
+      }
     } catch (error) {
       console.error('Erro no login:', error);
-      if (error.response?.status === 400) {
-        setErro('Email ou senha inválidos.');
+      
+      if (error.response?.status === 404) {
+        setErro('Email ou senha incorretos.');
+      } else if (error.response?.status === 400) {
+        setErro('Dados inválidos. Verifique suas informações.');
       } else {
         setErro('Erro ao fazer login. Tente novamente mais tarde.');
       }
@@ -58,20 +140,27 @@ function App() {
     }
 
     try {
-      const response = await axios.post('https://www.abibliadigital.com.br/api/users', {
+      // Tenta criar o usuário
+      const response = await axios.post('/users', {
         name: nome,
         email: email,
         password: senha,
         notifications: true
       });
 
-      // Após registro bem-sucedido, usar o token retornado
-      const novoToken = response.data.token;
-      setToken(novoToken);
-      localStorage.setItem('bibliaToken', novoToken);
-      buscarVersiculo(novoToken);
+      if (response.data.token) {
+        const novoToken = response.data.token;
+        setToken(novoToken);
+        localStorage.setItem('bibliaToken', novoToken);
+        setSnackbar({ open: true, message: 'Conta criada com sucesso!', severity: 'success' });
+        buscarVersiculo(novoToken);
+      } else {
+        // Se não recebeu o token, tenta fazer login
+        await handleLogin(e);
+      }
     } catch (error) {
       console.error('Erro no registro:', error);
+      
       if (error.response?.status === 400) {
         if (error.response?.data?.msg?.includes('already exists')) {
           setErro('Este email já está em uso.');
@@ -88,23 +177,39 @@ function App() {
 
   const buscarVersiculo = async (tokenAtual) => {
     setLoading(true);
+    setAnimarVersiculo(false);
+    
     try {
-      const response = await axios.get('https://www.abibliadigital.com.br/api/verses/nvi/random', {
+      const response = await axios.get('/verses/nvi/random', {
         headers: {
           'Authorization': `Bearer ${tokenAtual}`
         }
       });
 
-      setVersiculo(response.data);
+      if (response.data) {
+        setTimeout(() => {
+          setVersiculo(response.data);
+          setAnimarVersiculo(true);
+        }, 300);
+      }
     } catch (error) {
       console.error('Erro ao buscar versículo:', error);
       if (error.response?.status === 401) {
         setToken(null);
         localStorage.removeItem('bibliaToken');
+        setSnackbar({ open: true, message: 'Sessão expirada. Por favor, faça login novamente.', severity: 'warning' });
+      } else {
+        setSnackbar({ open: true, message: 'Erro ao carregar versículo. Tente novamente.', severity: 'error' });
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleModoEscuro = () => {
+    const novoModo = !modoEscuro;
+    setModoEscuro(novoModo);
+    localStorage.setItem('modoEscuro', novoModo);
   };
 
   useEffect(() => {
@@ -122,128 +227,258 @@ function App() {
 
   if (!token) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center">
-            Versículo Diário
-          </Typography>
-          <Typography variant="body1" gutterBottom align="center">
-            {modoRegistro ? 'Crie sua conta' : 'Faça login para ver o versículo do dia'}
-          </Typography>
-          <Box 
-            component="form" 
-            onSubmit={modoRegistro ? handleRegistro : handleLogin} 
-            sx={{ mt: 3 }}
-          >
-            {modoRegistro && (
-              <TextField
-                fullWidth
-                label="Nome"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                margin="normal"
-                required
-              />
-            )}
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              margin="normal"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Senha"
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              margin="normal"
-              required
-            />
-            {erro && (
-              <Typography color="error" sx={{ mt: 2 }}>
-                {erro}
-              </Typography>
-            )}
-            <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              sx={{ mt: 3 }}
-              disabled={loading}
+      <ThemeProvider theme={theme}>
+        <Box sx={{ 
+          minHeight: '100vh', 
+          bgcolor: 'background.default',
+          transition: 'background-color 0.3s ease'
+        }}>
+          <Container maxWidth="sm" sx={{ pt: 4, pb: 4 }}>
+            <Paper 
+              elevation={modoEscuro ? 2 : 1} 
+              sx={{ 
+                p: 4,
+                position: 'relative',
+                overflow: 'hidden'
+              }}
             >
-              {loading ? <CircularProgress size={24} /> : (modoRegistro ? 'Criar Conta' : 'Entrar')}
-            </Button>
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Link
-                component="button"
-                variant="body2"
-                onClick={() => {
-                  setModoRegistro(!modoRegistro);
-                  limparCampos();
-                }}
-                sx={{ cursor: 'pointer' }}
+              <Box position="absolute" right={8} top={8}>
+                <IconButton onClick={toggleModoEscuro} size="small">
+                  {modoEscuro ? <LightModeIcon /> : <DarkModeIcon />}
+                </IconButton>
+              </Box>
+
+              <Box display="flex" alignItems="center" justifyContent="center" mb={3}>
+                <BookIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+                <Typography variant="h4" component="h1" gutterBottom>
+                  Versículo Diário
+                </Typography>
+              </Box>
+
+              <Typography variant="body1" gutterBottom align="center" color="text.secondary">
+                {modoRegistro ? 'Crie sua conta para começar' : 'Bem-vindo de volta!'}
+              </Typography>
+
+              <Box 
+                component="form" 
+                onSubmit={modoRegistro ? handleRegistro : handleLogin} 
+                sx={{ mt: 3 }}
               >
-                {modoRegistro 
-                  ? 'Já tem uma conta? Faça login' 
-                  : 'Não tem uma conta? Registre-se'}
-              </Link>
-            </Box>
-          </Box>
-        </Paper>
-      </Container>
+                <Fade in={modoRegistro}>
+                  <Box>
+                    {modoRegistro && (
+                      <TextField
+                        fullWidth
+                        label="Nome"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        margin="normal"
+                        required
+                        sx={{ mb: 2 }}
+                      />
+                    )}
+                  </Box>
+                </Fade>
+
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  margin="normal"
+                  required
+                />
+
+                <TextField
+                  fullWidth
+                  label="Senha"
+                  type="password"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  margin="normal"
+                  required
+                  helperText={modoRegistro ? "Mínimo de 6 caracteres" : ""}
+                />
+
+                {erro && (
+                  <Typography 
+                    color="error" 
+                    sx={{ 
+                      mt: 2, 
+                      p: 1, 
+                      bgcolor: 'error.main', 
+                      color: 'white',
+                      borderRadius: 1,
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    {erro}
+                  </Typography>
+                )}
+
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  sx={{ mt: 3, height: 48 }}
+                  disabled={loading}
+                >
+                  {loading ? <CircularProgress size={24} /> : (modoRegistro ? 'Criar Conta' : 'Entrar')}
+                </Button>
+
+                <Divider sx={{ my: 3 }} />
+
+                <Box sx={{ textAlign: 'center' }}>
+                  <Link
+                    component="button"
+                    variant="body2"
+                    onClick={() => {
+                      setModoRegistro(!modoRegistro);
+                      setErro('');
+                      limparCampos();
+                    }}
+                    sx={{ 
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    {modoRegistro 
+                      ? 'Já tem uma conta? Faça login' 
+                      : 'Não tem uma conta? Registre-se'}
+                  </Link>
+                </Box>
+              </Box>
+            </Paper>
+          </Container>
+        </Box>
+      </ThemeProvider>
     );
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Versículo do Dia
-        </Typography>
-        
-        {loading ? (
-          <Box display="flex" justifyContent="center" my={4}>
-            <CircularProgress />
-          </Box>
-        ) : versiculo ? (
-          <>
-            <Typography variant="h6" color="primary" gutterBottom>
-              {versiculo.book.name} {versiculo.chapter}:{versiculo.number}
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {versiculo.text}
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={() => buscarVersiculo(token)}
-                sx={{ mr: 1 }}
-              >
-                Novo Versículo
-              </Button>
-              <Button
-                variant="text"
-                color="error"
-                onClick={() => {
-                  setToken(null);
-                  localStorage.removeItem('bibliaToken');
-                }}
-              >
-                Sair
-              </Button>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ 
+        minHeight: '100vh', 
+        bgcolor: 'background.default',
+        transition: 'background-color 0.3s ease'
+      }}>
+        <Container maxWidth="sm" sx={{ pt: 4, pb: 4 }}>
+          <Paper 
+            elevation={modoEscuro ? 2 : 1} 
+            sx={{ 
+              p: 4, 
+              textAlign: 'center',
+              position: 'relative'
+            }}
+          >
+            <Box position="absolute" right={8} top={8}>
+              <IconButton onClick={toggleModoEscuro} size="small">
+                {modoEscuro ? <LightModeIcon /> : <DarkModeIcon />}
+              </IconButton>
             </Box>
-          </>
-        ) : (
-          <Typography color="error">
-            Erro ao carregar o versículo. Por favor, tente novamente mais tarde.
-          </Typography>
-        )}
-      </Paper>
-    </Container>
+
+            <Box display="flex" alignItems="center" justifyContent="center" mb={4}>
+              <BookIcon sx={{ fontSize: 40, mr: 2, color: 'primary.main' }} />
+              <Typography variant="h4" component="h1">
+                Versículo do Dia
+              </Typography>
+            </Box>
+            
+            {loading ? (
+              <Box display="flex" justifyContent="center" my={8}>
+                <CircularProgress />
+              </Box>
+            ) : versiculo ? (
+              <Fade in={animarVersiculo}>
+                <Box>
+                  <Paper 
+                    elevation={0} 
+                    sx={{ 
+                      p: 3, 
+                      bgcolor: 'action.hover',
+                      borderRadius: 2
+                    }}
+                  >
+                    <Typography 
+                      variant="h6" 
+                      color="primary" 
+                      gutterBottom 
+                      sx={{ fontWeight: 500 }}
+                    >
+                      {versiculo.book.name} {versiculo.chapter}:{versiculo.number}
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      paragraph 
+                      sx={{ 
+                        fontSize: '1.1rem',
+                        lineHeight: 1.6,
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      "{versiculo.text}"
+                    </Typography>
+                  </Paper>
+
+                  <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
+                    <Tooltip title="Novo versículo">
+                      <IconButton
+                        onClick={() => buscarVersiculo(token)}
+                        color="primary"
+                        sx={{ 
+                          bgcolor: 'action.hover',
+                          '&:hover': { bgcolor: 'action.selected' }
+                        }}
+                      >
+                        <RefreshIcon />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Sair">
+                      <IconButton
+                        onClick={() => {
+                          setToken(null);
+                          localStorage.removeItem('bibliaToken');
+                        }}
+                        color="error"
+                        sx={{ 
+                          bgcolor: 'action.hover',
+                          '&:hover': { bgcolor: 'action.selected' }
+                        }}
+                      >
+                        <LogoutIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              </Fade>
+            ) : (
+              <Typography color="error">
+                Erro ao carregar o versículo. Por favor, tente novamente mais tarde.
+              </Typography>
+            )}
+          </Paper>
+        </Container>
+        
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert 
+            onClose={() => setSnackbar({ ...snackbar, open: false })} 
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </ThemeProvider>
   );
 }
 
