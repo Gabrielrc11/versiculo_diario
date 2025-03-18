@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 export const login = async (email, password) => {
-  const response = await api.post('/users/auth', { email, password });
+  const response = await api.put('/users/token', { email, password });
   return response.data;
 };
 
