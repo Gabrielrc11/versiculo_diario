@@ -1,19 +1,61 @@
+<h1 align="center">
+    <a href="https://laravelcollective.com/tools/banner">
+        <img alt="Banner" title="#Banner" style="object-fit: cover;" src="./public/Background.png"  />
+    </a>
+</h1>
+
 # Versículo Diário
 
-Uma aplicação React que mostra um versículo bíblico aleatório todos os dias.
+<p align="center"> Uma aplicação React que mostra um versículo bíblico aleatório todos os dias </p>
 
-## Configuração
+<h2 align="center">
+  <img src="https://img.shields.io/badge/web%3F-ok-blue?style=for-the-badge" alt="Sistema web Ok" />
+  <img src="https://img.shields.io/badge/server%3F-ok-blue?style=for-the-badge" alt="Server Ok" />
+  <img src="https://img.shields.io/badge/Mobile-OK-blue?style=for-the-badge" alt="Aplicativo mobile Ok" />
+</h2>
 
-1. Clone o repositório
-2. Instale as dependências:
+## 📌 Índice
+<p align="center">         
+  <a href="#tecnologias">Tecnologias </a> &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp;        
+  <a href="#instalação"> Instalação e Uso </a> &nbsp; &nbsp; &nbsp;
+</p>          
+
+## Tecnologias                                
+
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=for-the-badge&logo=mui&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
+
+## ⚙ Instalação   
+
+### Rodar projeto localmente
+
+Primeiro, clone o repositório para seu ambiente:
+
 ```bash
-npm install
+> git clone https://github.com/Gabrielrc11/versiculo_diario.git
 ```
 
-3. Execute a aplicação:
+Entre na pasta do projeto:
+
 ```bash
-npm run dev
+> cd devfolio
 ```
+
+Instale as dependencias do projeto:
+
+```bash
+> npm install
+```
+
+Por ultimo, rode o projeto localmente:
+
+```bash
+> npm run dev
+```
+
+-------------        
 
 ## Como Usar
 
@@ -29,14 +71,6 @@ npm run dev
    - Clicar em "Novo Versículo" para ver outro versículo
    - Clicar em "Sair" para fazer logout
 
-## Tecnologias Utilizadas
-
-- React
-- Vite
-- Material-UI (MUI)
-- Axios
-- API da Bíblia Digital
-
 ## Funcionalidades
 
 - Sistema completo de autenticação (login/registro)
@@ -45,3 +79,7 @@ npm run dev
 - Atualização manual do versículo
 - Persistência do login usando localStorage
 - Botão de logout
+
+---------------------------------
+
+- [Voltar ao Início](#index)
