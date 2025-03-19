@@ -32,6 +32,13 @@ export const MainLayout = ({ children, modoEscuro, onToggleTheme }) => {
             </Typography>
           </Box>
 
+          <Box display="flex" alignItems="center" justifyContent="center" mb={3}>
+            <Typography variant="h6" component="h1" gutterBottom>
+              Seu versículo na palma da mão
+            </Typography>
+          </Box>
+          
+
           {children}
         </Paper>
       </Container>
