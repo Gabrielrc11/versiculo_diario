@@ -1,8 +1,7 @@
 import { Paper, Typography, Box, IconButton, Tooltip, Fade } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import LogoutIcon from '@mui/icons-material/Logout';
 
-export const Verse = ({ versiculo, onRefresh, onLogout, animarVersiculo, modoEscuro }) => {
+export const Verse = ({ versiculo, onRefresh, animarVersiculo, modoEscuro }) => {
   return (
     <Fade in={animarVersiculo}>
       <Box>
@@ -46,19 +45,6 @@ export const Verse = ({ versiculo, onRefresh, onLogout, animarVersiculo, modoEsc
               }}
             >
               <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Sair">
-            <IconButton
-              onClick={onLogout}
-              color="error"
-              sx={{ 
-                bgcolor: 'action.hover',
-                '&:hover': { bgcolor: 'action.selected' }
-              }}
-            >
-              <LogoutIcon />
             </IconButton>
           </Tooltip>
         </Box>

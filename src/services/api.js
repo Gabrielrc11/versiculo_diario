@@ -28,6 +28,28 @@ export const recoverPassword = async (email) => {
   return response.data;
 };
 
+export const getUserInfo = async (token) => {
+  const response = await api.get('/users/stats', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  return response.data;
+};
+
+export const deleteAccount = async (token, email, password) => {
+  const response = await api.delete('/users', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    data: {
+      email,
+      password
+    }
+  });
+  return response.data;
+};
+
 export const getRandomVerse = async (token) => {
   const response = await api.get('/verses/nvi/random', {
     headers: {

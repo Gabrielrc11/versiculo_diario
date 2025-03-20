@@ -3,11 +3,13 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { MainLayout } from '../layouts/MainLayout';
 import { Verse } from '../components/Verse';
 import { Donation } from '../components/Donation';
-import { getRandomVerse } from '../services/api';
+import { getRandomVerse, getUserInfo } from '../services/api';
 
 export const Home = ({ token, onLogout, modoEscuro, onToggleTheme }) => {
   const [versiculo, setVersiculo] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingUserInfo, setLoadingUserInfo] = useState(true);
   const [animarVersiculo, setAnimarVersiculo] = useState(true);
 
   const buscarVersiculo = async () => {
@@ -30,12 +32,38 @@ export const Home = ({ token, onLogout, modoEscuro, onToggleTheme }) => {
     }
   };
 
+  const buscarInfoUsuario = async () => {
+    setLoadingUserInfo(true);
+    try {
+      console.log('Buscando informações do usuário...');
+      const data = await getUserInfo(token);
+      console.log('Informações do usuário recebidas:', data);
+      setUserInfo(data);
+    } catch (error) {
+      console.error('Erro ao buscar informações do usuário:', error);
+      console.error('Detalhes do erro:', error.response?.data || 'Sem detalhes disponíveis');
+      if (error.response?.status === 401) {
+        onLogout();
+      }
+    } finally {
+      setLoadingUserInfo(false);
+    }
+  };
+
   useEffect(() => {
     buscarVersiculo();
+    buscarInfoUsuario();
   }, [token]);
 
   return (
-    <MainLayout modoEscuro={modoEscuro} onToggleTheme={onToggleTheme}>
+    <MainLayout 
+      modoEscuro={modoEscuro} 
+      onToggleTheme={onToggleTheme}
+      userInfo={userInfo}
+      onLogout={onLogout}
+      loadingUserInfo={loadingUserInfo}
+      token={token}
+    >
       {loading ? (
         <Box display="flex" justifyContent="center" my={8}>
           <CircularProgress />
@@ -45,7 +73,6 @@ export const Home = ({ token, onLogout, modoEscuro, onToggleTheme }) => {
           <Verse
             versiculo={versiculo}
             onRefresh={buscarVersiculo}
-            onLogout={onLogout}
             animarVersiculo={animarVersiculo}
             modoEscuro={modoEscuro}
           />

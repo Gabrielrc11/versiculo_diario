@@ -113,7 +113,14 @@ export const Auth = ({ onLogin, modoEscuro, onToggleTheme }) => {
   };
 
   return (
-    <MainLayout modoEscuro={modoEscuro} onToggleTheme={onToggleTheme}>
+    <MainLayout 
+      modoEscuro={modoEscuro} 
+      onToggleTheme={onToggleTheme}
+      userInfo={null}
+      onLogout={null}
+      loadingUserInfo={false}
+      token={null}
+    >
       <Typography variant="body1" gutterBottom align="center" color="text.secondary">
         {modoRecuperacao 
           ? ''

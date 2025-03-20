@@ -2,8 +2,9 @@ import { Box, Container, Paper, IconButton, Typography } from '@mui/material';
 import BookIcon from '@mui/icons-material/Book';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import { UserProfile } from '../components/UserProfile';
 
-export const MainLayout = ({ children, modoEscuro, onToggleTheme }) => {
+export const MainLayout = ({ children, modoEscuro, onToggleTheme, userInfo, onLogout, loadingUserInfo, token }) => {
   return (
     <Box sx={{ 
       minHeight: '100vh', 
@@ -19,6 +20,13 @@ export const MainLayout = ({ children, modoEscuro, onToggleTheme }) => {
             overflow: 'hidden'
           }}
         >
+          <UserProfile 
+            userInfo={userInfo} 
+            onLogout={onLogout} 
+            loading={loadingUserInfo} 
+            token={token}
+          />
+          
           <Box position="absolute" right={8} top={8}>
             <IconButton onClick={onToggleTheme} size="small">
               {modoEscuro ? <LightModeIcon /> : <DarkModeIcon />}
@@ -38,7 +46,6 @@ export const MainLayout = ({ children, modoEscuro, onToggleTheme }) => {
             </Typography>
           </Box>
           
-
           {children}
         </Paper>
       </Container>
