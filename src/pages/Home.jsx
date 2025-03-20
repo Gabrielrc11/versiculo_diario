@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { MainLayout } from '../layouts/MainLayout';
 import { Verse } from '../components/Verse';
+import { Donation } from '../components/Donation';
 import { getRandomVerse } from '../services/api';
 
 export const Home = ({ token, onLogout, modoEscuro, onToggleTheme }) => {
@@ -40,13 +41,16 @@ export const Home = ({ token, onLogout, modoEscuro, onToggleTheme }) => {
           <CircularProgress />
         </Box>
       ) : versiculo ? (
-        <Verse
-          versiculo={versiculo}
-          onRefresh={buscarVersiculo}
-          onLogout={onLogout}
-          animarVersiculo={animarVersiculo}
-          modoEscuro={modoEscuro}
-        />
+        <>
+          <Verse
+            versiculo={versiculo}
+            onRefresh={buscarVersiculo}
+            onLogout={onLogout}
+            animarVersiculo={animarVersiculo}
+            modoEscuro={modoEscuro}
+          />
+          <Donation modoEscuro={modoEscuro} />
+        </>
       ) : (
         <Typography color="error">
           Erro ao carregar o versículo. Por favor, tente novamente mais tarde.
