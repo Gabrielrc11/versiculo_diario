@@ -23,6 +23,11 @@ export const register = async (name, email, password) => {
   return response.data;
 };
 
+export const recoverPassword = async (email) => {
+  const response = await api.post(`/users/password/${email}`);
+  return response.data;
+};
+
 export const getRandomVerse = async (token) => {
   const response = await api.get('/verses/nvi/random', {
     headers: {

@@ -11,6 +11,7 @@ import {
 
 export const AuthForm = ({
   modoRegistro,
+  modoRecuperacao,
   nome,
   email,
   senha,
@@ -20,7 +21,9 @@ export const AuthForm = ({
   onEmailChange,
   onSenhaChange,
   onSubmit,
-  onToggleMode
+  onToggleMode,
+  onRecuperarSenha,
+  onVoltarLogin
 }) => {
   return (
     <Box 
@@ -28,42 +31,66 @@ export const AuthForm = ({
       onSubmit={onSubmit} 
       sx={{ mt: 3 }}
     >
-      <Fade in={modoRegistro}>
-        <Box>
-          {modoRegistro && (
-            <TextField
-              fullWidth
-              label="Nome"
-              value={nome}
-              onChange={(e) => onNomeChange(e.target.value)}
-              margin="normal"
-              required
-              sx={{ mb: 2 }}
-            />
-          )}
-        </Box>
-      </Fade>
+      {!modoRecuperacao && (
+        <>
+          <Fade in={modoRegistro}>
+            <Box>
+              {modoRegistro && (
+                <TextField
+                  fullWidth
+                  label="Nome"
+                  value={nome}
+                  onChange={(e) => onNomeChange(e.target.value)}
+                  margin="normal"
+                  required
+                  sx={{ mb: 2 }}
+                />
+              )}
+            </Box>
+          </Fade>
 
-      <TextField
-        fullWidth
-        label="Email"
-        type="email"
-        value={email}
-        onChange={(e) => onEmailChange(e.target.value)}
-        margin="normal"
-        required
-      />
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
+            margin="normal"
+            required
+          />
 
-      <TextField
-        fullWidth
-        label="Senha"
-        type="password"
-        value={senha}
-        onChange={(e) => onSenhaChange(e.target.value)}
-        margin="normal"
-        required
-        helperText={modoRegistro ? "Mínimo de 6 caracteres" : ""}
-      />
+          <TextField
+            fullWidth
+            label="Senha"
+            type="password"
+            value={senha}
+            onChange={(e) => onSenhaChange(e.target.value)}
+            margin="normal"
+            required
+            helperText={modoRegistro ? "Mínimo de 6 caracteres" : ""}
+          />
+        </>
+      )}
+
+      {modoRecuperacao && (
+        <>
+          <Typography variant="h6" align="center" gutterBottom>
+            Recuperação de Senha
+          </Typography>
+          <Typography variant="body2" align="center" sx={{ mb: 3 }}>
+            Digite seu email para receber um link de recuperação de senha
+          </Typography>
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
+            margin="normal"
+            required
+          />
+        </>
+      )}
 
       {erro && (
         <Typography 
@@ -88,28 +115,69 @@ export const AuthForm = ({
         sx={{ mt: 3, height: 48 }}
         disabled={loading}
       >
-        {loading ? <CircularProgress size={24} /> : (modoRegistro ? 'Criar Conta' : 'Entrar')}
+        {loading ? <CircularProgress size={24} /> : (
+          modoRecuperacao ? 'Enviar Link de Recuperação' :
+          modoRegistro ? 'Criar Conta' : 'Entrar'
+        )}
       </Button>
 
       <Divider sx={{ my: 3 }} />
 
       <Box sx={{ textAlign: 'center' }}>
-        <Link
-          component="button"
-          variant="body2"
-          onClick={onToggleMode}
-          sx={{ 
-            cursor: 'pointer',
-            textDecoration: 'none',
-            '&:hover': {
-              textDecoration: 'underline'
-            }
-          }}
-        >
-          {modoRegistro 
-            ? 'Já tem uma conta? Faça login' 
-            : 'Não tem uma conta? Registre-se'}
-        </Link>
+        {modoRecuperacao ? (
+          <Link
+            component="button"
+            variant="body2"
+            onClick={onVoltarLogin}
+            sx={{ 
+              cursor: 'pointer',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: 'underline'
+              }
+            }}
+          >
+            Voltar para o login
+          </Link>
+        ) : (
+          <>
+            <Link
+              component="button"
+              variant="body2"
+              onClick={onToggleMode}
+              sx={{ 
+                cursor: 'pointer',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              {modoRegistro 
+                ? 'Já tem uma conta? Faça login' 
+                : 'Não tem uma conta? Registre-se'}
+            </Link>
+            
+            {!modoRegistro && (
+              <Box mt={1}>
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={onRecuperarSenha}
+                  sx={{ 
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  Esqueceu sua senha?
+                </Link>
+              </Box>
+            )}
+          </>
+        )}
       </Box>
     </Box>
   );
