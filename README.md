@@ -17,7 +17,8 @@
 ## 📌 Índice
 <p align="center">         
   <a href="#tecnologias">Tecnologias </a> &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp;        
-  <a href="#instalação"> Instalação e Uso </a> &nbsp; &nbsp; &nbsp;
+  <a href="#instalação"> Instalação e Uso </a> &nbsp; &nbsp; &nbsp; | &nbsp; &nbsp; &nbsp;
+  <a href="#apoie-o-criador-da-api"> Apoie o Criador da API </a> &nbsp; &nbsp; &nbsp;
 </p>          
 
 ## Tecnologias                                
@@ -79,6 +80,19 @@ Por ultimo, rode o projeto localmente:
 - Atualização manual do versículo
 - Persistência do login usando localStorage
 - Botão de logout
+
+## Apoie o Criador da API
+
+Este projeto utiliza a API da Bíblia Digital para fornecer os versículos bíblicos. A API é mantida por desenvolvedores independentes que dedicam tempo e recursos para manter este serviço gratuito.
+
+### Como apoiar:
+
+- **Estrela no GitHub**: Acesse o [repositório oficial](https://github.com/marciovsena/bibleapi) e deixe uma estrela
+- **Contribuições financeiras**: Considere fazer uma doação pelo seu [site oficial](https://www.abibliadigital.com.br/) e deixe uma estrela
+- **Contribuições técnicas**: Ajude no desenvolvimento da API enviando pull requests, reportando possiveis bugs e melhorias
+- **Compartilhe**: Divulgue o projeto nas redes sociais
+
+Seu apoio é fundamental para manter esta API disponível para todos e continuar espalhando a palavra de deus pelo mundo!
 
 ---------------------------------
 
