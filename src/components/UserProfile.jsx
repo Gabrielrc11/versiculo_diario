@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { 
   IconButton, 
   Avatar, 
@@ -19,56 +18,24 @@ import EmailIcon from '@mui/icons-material/Email';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import { DeleteAccountDialog } from './DeleteAccountDialog';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 export const UserProfile = ({ userInfo, onLogout, loading, token }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const open = Boolean(anchorEl);
-  
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-  
-  const handleLogout = () => {
-    if (onLogout) {
-      handleClose();
-      onLogout();
-    }
-  };
+  const {
+    anchorEl,
+    open,
+    deleteDialogOpen,
+    setDeleteDialogOpen,
+    handleClick,
+    handleClose,
+    handleLogout: handleLogoutHook,
+    handleDeleteAccountClick,
+    handleDeleteSuccess,
+    formatarUltimoLogin
+  } = useUserProfile();
 
-  const handleDeleteAccountClick = () => {
-    handleClose();
-    setDeleteDialogOpen(true);
-  };
-  
-  const handleDeleteSuccess = () => {
-    setDeleteDialogOpen(false);
-    if (onLogout) {
-      onLogout();
-    }
-  };
-
-  // Formata a data do último login
-  const formatarUltimoLogin = (dataString) => {
-    if (!dataString) return 'Indisponível';
-    
-    try {
-      const data = new Date(dataString);
-      return data.toLocaleDateString('pt-BR', { 
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return 'Data inválida';
-    }
-  };
+  const handleLogoutClick = () => handleLogoutHook(onLogout);
+  const handleDeleteSuccessClick = () => handleDeleteSuccess(onLogout);
 
   return (
     <>
@@ -145,7 +112,7 @@ export const UserProfile = ({ userInfo, onLogout, loading, token }) => {
             
             <Divider />
             
-            <MenuItem onClick={handleLogout} dense>
+            <MenuItem onClick={handleLogoutClick} dense>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" color="error" />
               </ListItemIcon>
@@ -160,13 +127,12 @@ export const UserProfile = ({ userInfo, onLogout, loading, token }) => {
             </MenuItem>
           </>
         ) : onLogout ? (
-          // Usuário autenticado, mas ainda sem dados (pode acontecer durante o carregamento)
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
               Carregando informações do usuário...
             </Typography>
             <Divider sx={{ my: 1 }} />
-            <MenuItem onClick={handleLogout} dense>
+            <MenuItem onClick={handleLogoutClick} dense>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" color="error" />
               </ListItemIcon>
@@ -174,7 +140,6 @@ export const UserProfile = ({ userInfo, onLogout, loading, token }) => {
             </MenuItem>
           </Box>
         ) : (
-          // Usuário não autenticado (na tela de login)
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary">
               Faça login para ver suas informações
@@ -187,7 +152,7 @@ export const UserProfile = ({ userInfo, onLogout, loading, token }) => {
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         token={token}
-        onSuccess={handleDeleteSuccess}
+        onSuccess={handleDeleteSuccessClick}
       />
     </>
   );
